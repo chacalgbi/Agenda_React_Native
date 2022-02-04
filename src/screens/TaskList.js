@@ -1,7 +1,7 @@
 //http://files.cod3r.com.br/curso-react-native/tasks_deps.txt
 
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, Text, View, ImageBackground, FlatList, TouchableOpacity, Platform } from 'react-native';
+import { StyleSheet, Text, View, ImageBackground, FlatList, TouchableOpacity, Platform, Alert } from 'react-native';
 import todayImage from '../../assets/imgs/today.jpg';
 import Task from '../components/Task';
 import moment from 'moment';
@@ -28,9 +28,10 @@ export default (props) => {
     ]
 
     const hoje = moment().locale('pt-br').format('ddd, D [de] MMMM');
-    const [state, setState] = useState({ showDoneTasks: true, modal: true, visibleTasks: [], tasks: tarefas })
+    const [state, setState] = useState({ showDoneTasks: true, modal: false, visibleTasks: [], tasks: tarefas })
+    
 
-    function toggleFilter(){ // Botão que marca para visualizar as todas ou somente as pendentes
+    function toggleFilter(){ // Botão que marca para visualizar todas ou somente as pendentes
         let exibir = !state.showDoneTasks
         let visible = []
         let lista = state.tasks
@@ -77,13 +78,83 @@ export default (props) => {
 
     }
 
+    function deleteTask(id){
+        const Tasks = [...state.tasks]
+        let others = []
+        Tasks.map((task, index) => {
+            if(task.id != id){
+                others.push(task)
+            }else{
+                console.log("EXCLUIDO:", task.desc)
+            }
+        })
+
+        let exibir = state.showDoneTasks
+        let visible = []
+
+        if(exibir == true){
+            visible = others
+        }else{
+            others.map((item, index)=>{
+                if(item.doneAt === null){
+                    visible.push(item)
+                }
+            })
+        }
+
+        setState({showDoneTasks: exibir, modal: state.modal, visibleTasks: visible, tasks: others })
+
+    }
+
     useEffect(() => {
-        setTimeout(()=>{ toggleFilter() }, 1000)
+        setTimeout(()=>{ updateTasks() }, 800)
     }, [])
+
+    function updateTasks(){
+        let exibir = state.showDoneTasks
+        let visible = []
+        let lista = state.tasks
+        
+        if(exibir == true){
+            visible = lista
+        }else{
+            lista.map((item, index)=>{
+                if(item.doneAt === null){
+                    visible.push(item)
+                }
+            })
+        }
+        setState({ showDoneTasks: exibir, modal: false, visibleTasks: visible, tasks: lista })
+    }
+
+    function addTask(newTask){
+        console.log(newTask);
+        
+        if(!newTask.desc.trim() || !newTask.desc){
+            Alert.alert('Dados Inválidos', 'Descrição não informada!')
+            return
+        }
+
+        let newTasks = [...state.tasks]
+        let visibles = [...state.visibleTasks]
+        newTasks.push({
+            id: Math.random(),
+            desc: newTask.desc,
+            estimateAt: newTask.date,
+            doneAt: null
+        })
+        visibles.push({
+            id: Math.random(),
+            desc: newTask.desc,
+            estimateAt: newTask.date,
+            doneAt: null
+        })
+        setState({showDoneTasks: state.showDoneTasks, modal: false, visibleTasks: visibles, tasks: newTasks})
+    }
 
     return (
         <View style={stl.container}>
-            <AddTask  isVisible={state.modal} onCancel={()=>{ setState({showDoneTasks: state.showDoneTasks, modal: false, visibleTasks: state.visibleTasks, tasks: state.tasks}) }} />
+            <AddTask  isVisible={state.modal} onSave={addTask} onCancel={()=>{ setState({showDoneTasks: state.showDoneTasks, modal: false, visibleTasks: state.visibleTasks, tasks: state.tasks}) }} />
             <ImageBackground style={stl.background} source={todayImage}>
                 <View style={stl.iconBar}>
                     <TouchableOpacity onPress={ toggleFilter }>
@@ -99,12 +170,16 @@ export default (props) => {
                 <FlatList 
                     data={state.visibleTasks}
                     keyExtractor={item => `${item.id}`}
-                    renderItem={(obj)=> <Task {...obj.item} toggleTask={toggleTask} /> } // o spred operator serve para passar os items do OBJ como se fosse passando cada data separadamente.
+                    renderItem={(obj)=> <Task {...obj.item} toggleTask={toggleTask} deleteTask={deleteTask}  /> } // o spred operator serve para passar os items do OBJ como se fosse passando cada data separadamente.
                 />
             </View>
+            <TouchableOpacity activeOpacity={0.6} style={stl.addButton} onPress={ ()=>{ setState({showDoneTasks: state.showDoneTasks, modal: true, visibleTasks: state.visibleTasks, tasks: state.tasks}) } }>
+                <Icon name='plus' size={20} color={estilos.colors.secondary} />
+            </TouchableOpacity>
         </View>
     );
-  };
+}
+
 const stl = StyleSheet.create({
     container:{
         flex: 1
@@ -138,5 +213,16 @@ const stl = StyleSheet.create({
         marginHorizontal: 20,
         justifyContent: 'flex-end',
         marginTop: Platform.OS === 'ios' ? 30 : 20
+    },
+    addButton:{
+        position: 'absolute',
+        right: 30,
+        bottom: 30,
+        width: 50,
+        height: 50,
+        borderRadius: 25,
+        backgroundColor: estilos.colors.today,
+        justifyContent: 'center',
+        alignItems: 'center'
     }
 });

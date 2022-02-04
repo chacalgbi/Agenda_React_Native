@@ -1,12 +1,45 @@
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, Modal, Text, View, TouchableOpacity, TextInput, TouchableWithoutFeedback } from 'react-native';
+import { StyleSheet, Modal, Text, View, TouchableOpacity, TextInput, TouchableWithoutFeedback, Platform } from 'react-native';
 import estilos from '../estilos';
+import DateTimePicker from '@react-native-community/datetimepicker';
+import moment from 'moment';
+import 'moment/locale/pt-br';
 
-initialState = { desc: '' }
+let initialState = { desc: '', date: new Date(), show: false }
 
 export default (props) => {
 
     const [state, setState] = useState(initialState)
+
+    function gravarData(event, selectedDate){
+        const currentDate = selectedDate || new Date();
+        setState({ desc: state.desc, date: currentDate, show: false })       
+    }
+
+    function getdate(){
+        let date = <DateTimePicker value={state.date} is24Hour={true} onChange={ gravarData } display='spinner' mode='date' />
+        const dateString = moment(state.date).locale('pt-br').format('ddd, D [de] MMMM');
+  
+        return (
+            <View>
+                <TouchableOpacity onPress={ ()=>{ setState({ desc: state.desc, date: state.date, show: true }) } }>
+                    <Text style={stl.date}> {dateString} </Text>
+                </TouchableOpacity>
+                {state.show && date /* Só renderiza o componente'date' se state.show for true*/ }
+            </View>
+        )
+    }
+
+    function saveTask(){
+        const newTask = {
+            desc: state.desc,
+            date: state.date
+        }
+        if(props.onSave){
+            setState({ desc: '', date: new Date(), show: false })
+            props.onSave(newTask)
+        }
+    }
 
     return (
         <Modal transparent={true} visible={props.isVisible} onRequestClose={props.onCancel} animationType='slide'>
@@ -17,11 +50,12 @@ export default (props) => {
                     style={stl.input}
                     placeholder='Informe a descrição...'
                     value={state.desc}
-                    onChangeText={ (novoTexto) => {setState({desc: novoTexto})} }
+                    onChangeText={ (novoTexto) => {setState({desc: novoTexto, date: state.date, show: state.show})} }
                 />
+                { getdate() }
                 <View style={stl.buttons}>
                     <TouchableOpacity onPress={props.onCancel}><Text style={stl.button}>Cancelar</Text></TouchableOpacity>
-                    <TouchableOpacity><Text style={stl.button}>Salvar</Text></TouchableOpacity>
+                    <TouchableOpacity onPress={saveTask}      ><Text style={stl.button}>Salvar</Text></TouchableOpacity>
                 </View>
             </View>
             <TouchableWithoutFeedback onPress={props.onCancel}><View style={stl.background}></View></TouchableWithoutFeedback>
@@ -63,5 +97,10 @@ const stl = StyleSheet.create({
         borderWidth: 2,
         borderColor: '#E3E3E3',
         borderRadius: 10
+    },
+    date:{
+        fontFamily: estilos.fontFamily,
+        fontSize: 20,
+        marginLeft: 15
     }
 });
