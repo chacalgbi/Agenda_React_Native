@@ -9,27 +9,26 @@ import 'moment/locale/pt-br'
 import estilos from '../estilos';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import AddTask from './AddTask';
+import MMKVStorage, { useMMKVStorage } from "react-native-mmkv-storage";
+
+const storage = new MMKVStorage.Loader().withEncryption().initialize();
+
+const initialState = {
+    showDoneTasks: true,
+    modal: false,
+    visibleTasks: [],
+    tasks: []
+}
 
 export default (props) => {
 
-    let tarefas = [
-        {
-            id: Math.random(),
-            desc: 'Comprar Livro de React Native',
-            estimateAt: new Date(),
-            doneAt: new Date()
-        },
-        {
-            id: Math.random(),
-            desc: 'Ler Livro de React Native',
-            estimateAt: new Date(),
-            doneAt: null
-        }
-    ]
-
     const hoje = moment().locale('pt-br').format('ddd, D [de] MMMM');
-    const [state, setState] = useState({ showDoneTasks: true, modal: false, visibleTasks: [], tasks: tarefas })
-    
+    const [state, setState] = useMMKVStorage('state', storage, {
+        showDoneTasks: true,
+        modal: false,
+        visibleTasks: [],
+        tasks: []  
+    })
 
     function toggleFilter(){ // Botão que marca para visualizar todas ou somente as pendentes
         let exibir = !state.showDoneTasks

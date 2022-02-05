@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, Modal, Text, View, TouchableOpacity, TextInput, TouchableWithoutFeedback, Platform } from 'react-native';
+import { StyleSheet, Modal, Text, View, TouchableOpacity, TextInput, 
+    TouchableWithoutFeedback, Platform, KeyboardAvoidingView, ScrollView } from 'react-native';
 import estilos from '../estilos';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import moment from 'moment';
@@ -41,32 +42,43 @@ export default (props) => {
         }
     }
 
+    function openKeyboard(){
+        console.log('Abriu Teclado')
+    }
+
     return (
         <Modal transparent={true} visible={props.isVisible} onRequestClose={props.onCancel} animationType='slide'>
             <TouchableWithoutFeedback onPress={props.onCancel}><View style={stl.background}></View></TouchableWithoutFeedback>
-            <View style={stl.container}>
-                <Text style={stl.header}>Nova Tarefa</Text>
-                <TextInput 
-                    style={stl.input}
-                    placeholder='Informe a descrição...'
-                    value={state.desc}
-                    onChangeText={ (novoTexto) => {setState({desc: novoTexto, date: state.date, show: state.show})} }
-                />
-                { getdate() }
-                <View style={stl.buttons}>
-                    <TouchableOpacity onPress={props.onCancel}><Text style={stl.button}>Cancelar</Text></TouchableOpacity>
-                    <TouchableOpacity onPress={saveTask}      ><Text style={stl.button}>Salvar</Text></TouchableOpacity>
+            
+            <KeyboardAvoidingView behavior="padding" style={stl.key}>
+                <View style={stl.container}>
+                    <Text style={stl.header}>Nova Tarefa</Text>
+                    <TextInput 
+                        style={stl.input}
+                        placeholder='Informe a descrição...'
+                        value={state.desc}
+                        onFocus={openKeyboard}
+                        onChangeText={ (novoTexto) => {setState({desc: novoTexto, date: state.date, show: state.show})} }
+                    />
+                    { getdate() }
+                    <View style={stl.buttons}>
+                        <TouchableOpacity onPress={props.onCancel}><Text style={stl.button}>Cancelar</Text></TouchableOpacity>
+                        <TouchableOpacity onPress={saveTask}      ><Text style={stl.button}>Salvar</Text></TouchableOpacity>
+                    </View>
                 </View>
-            </View>
+            </KeyboardAvoidingView>
+
             <TouchableWithoutFeedback onPress={props.onCancel}><View style={stl.background}></View></TouchableWithoutFeedback>
         </Modal>
-
     );
   };
 const stl = StyleSheet.create({
     background:{
         flex: 1,
         backgroundColor: 'rgba(0,0,0,0.7)'
+    },
+    key:{
+        flex: 1
     },
     container:{
         flex: 1,

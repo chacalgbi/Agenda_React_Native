@@ -1,9 +1,8 @@
 import React from 'react';
-import { StyleSheet, Text, View, TouchableWithoutFeedback, TouchableOpacity } from 'react-native';
+import { StyleSheet, Text, View, TouchableWithoutFeedback } from 'react-native';
 import 'react-native'
 import estilos from '../estilos';
 import Icon from 'react-native-vector-icons/FontAwesome';
-import { ListItem, Avatar, Button } from 'react-native-elements';
 import moment from 'moment';
 import 'moment/locale/pt-br'
 
